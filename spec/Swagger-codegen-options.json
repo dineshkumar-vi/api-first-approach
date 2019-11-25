@@ -1,0 +1,6 @@
+{
+"basePackage":"com.apifirst",
+"configPackage":"com.apifirst.config",
+ "modelPackage" : "com.apifirst.model",
+ "apiPackage" : "com.apifirst.controllor"
+}

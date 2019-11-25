@@ -1,0 +1,238 @@
+swagger: '2.0'
+info:
+  title: Api First Approach - Cart Microservice
+  description: Cart Microservice - CRUD operation
+  version: "0.0.1"
+  contact:
+    name: admin@mail.com
+
+# global constants
+x-types:
+  CartType: &CartType
+    - iOS #Add to cart from iOS app
+    - Desktop #Add to cart from desktop app
+    - BrowserExtension #Add to cart from browser extension
+    - POS # Add to cart from Point of sale
+
+basePath: /v1/cart
+schemes:
+  - http
+  - https
+paths:
+  "/create/{userId}":
+    post:
+      tags:
+        - CartService
+      summary: Cart Service - Create new cart
+      description: "Add to cart service - Create the new cart from various providers"
+      operationId: "createCartService"
+      produces:
+        - application/json
+      parameters:
+        - name: userId
+          in: path
+          description: User Id
+          required: true
+          type: string
+        - in: body
+          name: body
+          description: Create Cart Request
+          required: true
+          schema:
+            $ref: "#/definitions/Carts"
+      responses:
+        200:
+          description: Create cart response
+          schema:
+            $ref: '#/definitions/ApiSuccessResponse'
+        400:
+          $ref: '#/definitions/ApiErrorResponse'
+        500:
+          $ref: '#/responses/GenericError'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/ErrorModel'
+      security:
+        - oAuthSample: [write_cart]
+  "/get/{userId}":
+    get:
+      tags:
+        - CartService
+      summary: Cart Service - Get the existing cart
+      description: "Get cart service - Get the existing carts for  user"
+      operationId: "getCartService"
+      consumes:
+        - application/x-www-form-urlencoded
+      produces:
+        - application/json
+      parameters:
+        - name: userId
+          in: path
+          description: User Id
+          required: true
+          type: string
+      responses:
+        200:
+          description: Get cart Responses
+          schema:
+            $ref: '#/definitions/Carts'
+        400:
+          $ref: '#/definitions/ApiErrorResponse'
+        500:
+          $ref: '#/responses/GenericError'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/ErrorModel'
+      security:
+        - oAuthSample: [read_cart]
+  "/delete/{userId}":
+    delete:
+      tags:
+        - CartService
+      summary: Cart Service - Delete the existing cart
+      description: "Delete cart service - Delete the existing carts for  user"
+      operationId: "deleteCartService"
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: userId
+          description: User Id
+          required: true
+          type: string
+      responses:
+        200:
+          description: Cart deleted successfully
+        400:
+          $ref: '#/definitions/ApiErrorResponse'
+        500:
+          $ref: '#/responses/GenericError'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/ErrorModel'
+      security:
+        - oAuthSample: [read_cart]
+
+definitions:
+  Carts:
+    type: object
+    properties:
+      award:
+        type: array
+        items:
+          $ref: '#/definitions/cart'
+
+  cart:
+    type: object
+    properties:
+      type:
+        type: string
+        enum: *CartType
+        description: Cart Type - Origin Device.
+      productName:
+        type: string
+        description: Product Name.
+      quantity:
+        type: integer
+        format: int32
+        description: Product Quantity.
+      SKU:
+        type: string
+        description: Product Sku number.
+      avilability:
+        type: boolean
+        description: Product avilable in the regitsry or not.
+      totalPrice:
+        type: double
+        format: int32
+        description: Product total price.
+      currentPrice:
+        type: double
+        format: int32
+        description: Product current price item.
+      discount:
+        type: double
+        format: int32
+        description: Discount price.
+    required:
+      - type
+      - productName
+      - quantity
+      - currentPrice
+
+  ApiSuccessResponse:
+    type: object
+    properties:
+      code:
+        type: string
+        description: Response Code.
+      status:
+        type: string
+        description: Response Status.
+      data:
+        properties:
+          recordsProcessed:
+            type: integer
+            format: int32
+            description: Records Procced.
+          recordsBlocked:
+            type: integer
+            format: int32
+            description: Records Blocked.
+          timestamp:
+            type: string
+            description: Time Stamp.
+
+  ApiErrorResponse:
+    type: object
+    properties:
+      code:
+        type: string
+        description: Common Error Code.
+      status:
+        type: string
+        description: Response Status.
+      data:
+        properties:
+          errorCode:
+            type: integer
+            format: int32
+            description: Client Error Code.
+          errorMessage:
+            type: string
+            description: Client Error Message.
+          timestamp:
+            type: string
+            description: Time Stamp.
+
+  ErrorModel:
+    type: object
+    properties:
+      code:
+        type: string
+      message:
+        type: string
+      fields:
+        type: string
+
+
+responses:
+  GenericError:
+    description: General server error
+    schema:
+      $ref: '#/definitions/ErrorModel'
+
+components:
+  securitySchemes:
+    oAuthSample:
+      type: oauth2
+      flows:
+        implicit:
+          authorizationUrl: https://api.example.com/oauth2/authorize
+        scopes:
+          read_cart: cart read access
+          write_cart: cart write access
+          delete_cart: cart delete access
